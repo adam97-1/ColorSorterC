@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct
 {
@@ -9,7 +10,5 @@ typedef struct
   uint8_t Prioryty;
 }Task;
 
-extern Task TaskList[];
 void TaskMenager_Run();
-
-
+bool TaskMenager_AddTask(Task task);

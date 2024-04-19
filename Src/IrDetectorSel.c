@@ -46,7 +46,7 @@ void IrDetectorSel_Init()
   GPIOC->PUPDR |= 1 << GPIO_PUPDR_PUPD8_Pos;
 
   Task task = { .Func = Loop, .Period = 100, .Prioryty = 1};
-  TaskList[0] = task;
+  TaskMenager_AddTask(task);
 }
 
 void IrDetectorSel_SetRisingEdgeStateFunc(void (*func)(void))
