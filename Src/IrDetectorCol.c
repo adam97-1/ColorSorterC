@@ -3,20 +3,34 @@
 #include <stddef.h>
 #include "SysTick.h"
 
-void (*RisingEdgeState)(void) = NULL;
-void (*FallingEdgeState)(void) = NULL;
+static void (*RisingEdgeStateFunc)(void) = NULL;
+static void (*FallingEdgeStateFunc)(void) = NULL;
 
-static void IrDetectorCol_Loop()
+static void RisingEdgeState()
 {
-  static bool oldState = false;
-  bool state = IrDetectorCol_GetState();
-  if(state != oldState)
+  if(RisingEdgeStateFunc == NULL)
+    return;
+  RisingEdgeStateFunc();
+}
+
+static void FallingEdgeState()
+{
+  if(FallingEdgeStateFunc == NULL)
+    return;
+  FallingEdgeStateFunc();
+}
+
+static void Loop()
+{
+  static bool OldState = false;
+  bool State = IrDetectorCol_GetState();
+  if(State != OldState)
     {
-    if(state == true)
+    if(State == true)
       RisingEdgeState();
     else
       FallingEdgeState();
-    oldState = state;
+    OldState = State;
     }
   else;
 }
@@ -31,17 +45,17 @@ void IrDetectorCol_Init()
   GPIOC->PUPDR &= ~GPIO_PUPDR_PUPD9_Msk;
   GPIOC->PUPDR |= 1 << GPIO_PUPDR_PUPD9_Pos;
 
-  PeriodFunc[0] = IrDetectorCol_Loop;
+  PeriodFunc[0] = Loop;
 }
 
-void IrDetectorCol_SetRisingEngeStateFunc(void (*func)(void))
+void IrDetectorCol_SetRisingEdgeStateFunc(void (*func)(void))
 {
-  RisingEdgeState = func;
+  RisingEdgeStateFunc = func;
 }
 
-void IrDetectorCol_SetFallingEngeStateFunc(void (*func)(void))
+void IrDetectorCol_SetFallingEdgeStateFunc(void (*func)(void))
 {
-  FallingEdgeState = func;
+  FallingEdgeStateFunc = func;
 }
 
 bool IrDetectorCol_GetState()

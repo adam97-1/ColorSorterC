@@ -1,6 +1,39 @@
-
 #include "IrDetectorSel.h"
 #include <stm32f446xx.h>
+#include <stddef.h>
+#include "SysTick.h"
+
+static void (*RisingEdgeStateFunc)(void) = NULL;
+static void (*FallingEdgeStateFunc)(void) = NULL;
+
+static void RisingEdgeState()
+{
+  if(RisingEdgeStateFunc == NULL)
+    return;
+  RisingEdgeStateFunc();
+}
+
+static void FallingEdgeState()
+{
+  if(FallingEdgeStateFunc == NULL)
+    return;
+  FallingEdgeStateFunc();
+}
+
+static void Loop()
+{ 
+  static bool OldState = false;
+  bool State = IrDetectorSel_GetState();
+  if(State != OldState)
+    {
+      if(State == true)
+	RisingEdgeState();
+      else
+	FallingEdgeState();
+      OldState = State;
+    }
+  else;
+}
 
 void IrDetectorSel_Init()
 {
@@ -11,9 +44,21 @@ void IrDetectorSel_Init()
 
   GPIOC->PUPDR &= ~GPIO_PUPDR_PUPD8_Msk;
   GPIOC->PUPDR |= 1 << GPIO_PUPDR_PUPD8_Pos;
+
+  PeriodFunc[1] = Loop;
 }
 
-bool IrDetectorSel_getState()
+void IrDetectorSel_SetRisingEdgeStateFunc(void (*func)(void))
+{
+  RisingEdgeStateFunc = func;
+}
+
+void IrDetectorSel_SetFallingEdgeStateFunc(void (*func)(void))
+{
+  FallingEdgeStateFunc = func;
+}
+
+bool IrDetectorSel_GetState()
 {
   return (GPIOC->IDR & GPIO_IDR_ID8_Msk) != GPIO_IDR_ID8;
 }

@@ -6,20 +6,13 @@
 #include "IrDetectorCol.h"
 #include "SysTick.h"
 
-void testFun()
+void ToggleLed2()
 {
   GPIOA->ODR ^= GPIO_ODR_OD5;
 }
 
-int main(void)
+void InitLed2()
 {
-  Clock_Init();
-  SystemCoreClockUpdate();
-  IrDetectorSel_Init();
-  IrDetectorCol_Init();
-
-
-
   RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 
   GPIOA->MODER |= GPIO_MODER_MODE5_0;
@@ -32,9 +25,24 @@ int main(void)
 
   GPIOA->PUPDR |= GPIO_PUPDR_PUPD0_0;
   GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD0_1);
-  IrDetectorCol_SetFallingEngeStateFunc(testFun);
-  IrDetectorCol_SetRisingEngeStateFunc(testFun);
+}
+
+int main(void)
+{
+  Clock_Init();
+  SystemCoreClockUpdate();
   SysTick_Init();
+  IrDetectorSel_Init();
+  IrDetectorCol_Init();
+
+  InitLed2();
+  
+  IrDetectorCol_SetFallingEdgeStateFunc(ToggleLed2);
+  IrDetectorCol_SetRisingEdgeStateFunc(ToggleLed2);
+  
+  IrDetectorSel_SetFallingEdgeStateFunc(ToggleLed2);
+  IrDetectorSel_SetRisingEdgeStateFunc(ToggleLed2);
+  
   while(1)
     {
       

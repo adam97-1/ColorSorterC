@@ -1,5 +1,8 @@
 #pragma once
+
 #include <stdbool.h>
 
 void IrDetectorSel_Init();
-bool IrDetectorSel_getState();
+void IrDetectorSel_SetRisingEdgeStateFunc(void (*func)(void));
+void IrDetectorSel_SetFallingEdgeStateFunc(void (*func)(void));
+bool IrDetectorSel_GetState();
