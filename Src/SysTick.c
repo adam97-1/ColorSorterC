@@ -2,6 +2,8 @@
 #include <stm32f446xx.h>
 #include <stddef.h>
 
+static uint32_t msTime = 0;
+
 void SysTick_Init()
 {
   SysTick_Config(SystemCoreClock/1000);
@@ -9,19 +11,13 @@ void SysTick_Init()
  
 }
 
-void SysTick_Handler(void)
+uint32_t SysTick_GetTime()
 {
-  static uint32_t msTime = 0;
-  msTime++;
-
-  if(msTime % 100)
-    for (size_t i = 9; i < 10; i--)
-      {
-	if(PeriodFunc[i] == NULL)
-	  continue;
-	PeriodFunc[i]();
-      }
+  return msTime;
 }
 
-void (*PeriodFunc[10])(void) = {NULL};
+void SysTick_Handler(void)
+{
+  msTime++;
+}
 

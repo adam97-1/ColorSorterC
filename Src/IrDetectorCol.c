@@ -1,7 +1,7 @@
 #include "IrDetectorCol.h"
 #include <stm32f446xx.h>
 #include <stddef.h>
-#include "SysTick.h"
+#include "TaskMenager.h"
 
 static void (*RisingEdgeStateFunc)(void) = NULL;
 static void (*FallingEdgeStateFunc)(void) = NULL;
@@ -45,7 +45,8 @@ void IrDetectorCol_Init()
   GPIOC->PUPDR &= ~GPIO_PUPDR_PUPD9_Msk;
   GPIOC->PUPDR |= 1 << GPIO_PUPDR_PUPD9_Pos;
 
-  PeriodFunc[0] = Loop;
+  Task task = { .Func = Loop, .Period = 100, .Prioryty = 1};
+  TaskList[1] = task;
 }
 
 void IrDetectorCol_SetRisingEdgeStateFunc(void (*func)(void))

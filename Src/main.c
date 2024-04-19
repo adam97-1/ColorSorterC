@@ -5,6 +5,7 @@
 #include "IrDetectorSel.h"
 #include "IrDetectorCol.h"
 #include "SysTick.h"
+#include "TaskMenager.h"
 
 void ToggleLed2()
 {
@@ -45,7 +46,7 @@ int main(void)
   
   while(1)
     {
-      
+      TaskMenager_Run();
 	   
     }
 }
