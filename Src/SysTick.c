@@ -2,7 +2,7 @@
 #include <stm32f446xx.h>
 #include <stddef.h>
 
-static uint32_t msTime = 0;
+static uint32_t MsTime = 0;
 
 void SysTick_Init()
 {
@@ -13,11 +13,11 @@ void SysTick_Init()
 
 uint32_t SysTick_GetTime()
 {
-  return msTime;
+  return MsTime;
 }
 
 void SysTick_Handler(void)
 {
-  msTime++;
+  MsTime++;
 }
 
