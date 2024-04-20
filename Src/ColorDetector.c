@@ -2,7 +2,109 @@
 #include <stm32f446xx.h>
 #include "TaskMenager.h"
 
-static void GpioInit()
+// S0  - PC6
+// S1  - PC5
+// S2  - PC10
+// S3  - PC11
+// LED - PC12
+// OUT - PD2/TIM3_ETR
+
+typedef enum
+  {
+    ColorFilter_None,
+    ColorFilter_Red,
+    ColorFilter_Green,
+    ColorFilter_Blue
+  }ColorFilter; 
+
+typedef enum
+  {
+    Prescaler_0,
+    Prescaler_2,
+    Prescaler_20,
+    Prescaler_100
+  }Prescaler;
+
+typedef enum
+  {
+    PinState_High,
+    PinState_Low
+  }PinState;
+
+static inline void SetStateS0(PinState State)
+{
+  switch(State)
+    {
+    case PinState_High:
+      GPIOC->ODR |= GPIO_ODR_OD6;
+      break;
+    case PinState_Low:
+      GPIOC->ODR &= ~GPIO_ODR_OD6;
+      break;
+    default:
+      break;
+    }
+}
+
+static inline void SetStateS1(PinState State)
+{
+  switch(State)
+    {
+    case PinState_High:
+      GPIOC->ODR |= GPIO_ODR_OD5;
+      break;
+    case PinState_Low:
+      GPIOC->ODR &= ~GPIO_ODR_OD5;
+      break;
+    default:
+      break;
+    }
+}
+static inline void SetStateS2(PinState State)
+{
+  switch(State)
+    {
+    case PinState_High:
+      GPIOC->ODR |= GPIO_ODR_OD10;
+      break;
+    case PinState_Low:
+      GPIOC->ODR &= ~GPIO_ODR_OD10;
+      break;
+    default:
+      break;
+    }
+}
+static inline void SetStateS3(PinState State)
+{
+  switch(State)
+    {
+    case PinState_High:
+      GPIOC->ODR |= GPIO_ODR_OD11;
+      break;
+    case PinState_Low:
+      GPIOC->ODR &= ~GPIO_ODR_OD11;
+      break;
+    default:
+      break;
+    }
+}
+
+static inline void SetStateLed(PinState State)
+{
+  switch(State)
+    {
+    case PinState_High:
+      GPIOC->ODR |= GPIO_ODR_OD12;
+      break;
+    case PinState_Low:
+      GPIOC->ODR &= ~GPIO_ODR_OD12;
+      break;
+    default:
+      break;
+    }
+}
+
+static inline void GpioInit()
 {
   RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN);
   RCC->APB1ENR |= (RCC_APB1ENR_TIM3EN);
@@ -34,7 +136,7 @@ static void GpioInit()
 
 }
 
-static void TimerInit()
+static inline void TimerInit()
 {
   TIM3->SMCR &= ~(TIM_SMCR_ETF_Msk     | TIM_SMCR_ETPS_Msk      | TIM_SMCR_ETP);
   TIM3->SMCR |= (0 << TIM_SMCR_ETF_Pos | 1 << TIM_SMCR_ETPS_Pos | TIM_SMCR_ECE);
@@ -49,10 +151,61 @@ static void Loop()
   GPIOA->ODR ^= GPIO_ODR_OD5;
 }
 
+
 void ColorDetector_Init()
 {
   GpioInit();
   TimerInit();
   Task task = {.Func = Loop, .Period = 1000, .Prioryty = 1};
   TaskMenager_AddTask(task);
+}
+
+static void SetColorFilter(ColorFilter Filter)
+{
+  switch(Filter)
+    {
+    case ColorFilter_None:
+      SetStateS2(PinState_High);
+      SetStateS3(PinState_Low);
+      break;
+    case ColorFilter_Red:
+      SetStateS2(PinState_Low);
+      SetStateS3(PinState_Low);
+      break;
+    case ColorFilter_Green:
+      SetStateS2(PinState_High);
+      SetStateS3(PinState_High);
+      break;
+    case ColorFilter_Blue:
+      SetStateS2(PinState_Low);
+      SetStateS3(PinState_High);
+      break;
+    default:
+      break;
+    }
+}
+
+static void SetPresacler(Prescaler prescaler)
+{
+  switch(prescaler)
+    {
+    case Prescaler_0:
+      SetStateS0(PinState_Low);
+      SetStateS1(PinState_Low);
+      break;
+    case Prescaler_2:
+      SetStateS0(PinState_Low);
+      SetStateS1(PinState_High);
+      break;
+    case Prescaler_20:
+      SetStateS0(PinState_High);
+      SetStateS1(PinState_Low);
+      break;
+    case Prescaler_100:
+      SetStateS0(PinState_High);
+      SetStateS1(PinState_High);
+      break;
+    default:
+      break;
+    }
 }
