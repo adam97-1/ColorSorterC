@@ -41,6 +41,11 @@ void InitB1()
 
 }
 
+void SlotColorReady(ColorDetector_Color color)
+{
+
+}
+
 int main(void)
 {
   Clock_Init();
@@ -58,13 +63,11 @@ int main(void)
   
   IrDetectorSel_SetFallingEdgeStateFunc(ToggleLed2);
   IrDetectorSel_SetRisingEdgeStateFunc(ToggleLed2);
+  ColorDetector_SetColorReadyFunc(SlotColorReady);
   
   while(1)
     {
       TaskMenager_Run();
-      if((GPIOC->IDR & GPIO_IDR_ID13) == GPIO_IDR_ID13)
-	GPIOC->ODR |= GPIO_ODR_OD11;
-      else
-	GPIOC->ODR &= ~GPIO_ODR_OD11;
+      ColorDetector_GetColor();
     }
 }
