@@ -1,3 +1,5 @@
+#include <EncoderDriv.h>
+#include <EncoderSel.h>
 #include <stdint.h>
 #include <stm32f446xx.h>
 #include <system_stm32f4xx.h>
@@ -7,8 +9,6 @@
 #include "SysTick.h"
 #include "TaskMenager.h"
 #include "ColorDetector.h"
-#include "EncoderSel.h"
-#include "EncoderDriv.h"
 #include <stdint.h>
 void ToggleLed2()
 {
@@ -60,21 +60,21 @@ int main(void)
   EncoderSel_Init();
   EncoderDriv_Init();
 
-  InitLed2();
+//  InitLed2();
   InitB1();
   
-  IrDetectorCol_SetFallingEdgeStateFunc(ToggleLed2);
-  IrDetectorCol_SetRisingEdgeStateFunc(ToggleLed2);
-  
-  IrDetectorSel_SetFallingEdgeStateFunc(ToggleLed2);
-  IrDetectorSel_SetRisingEdgeStateFunc(ToggleLed2);
+//  IrDetectorCol_SetFallingEdgeStateFunc(ToggleLed2);
+//  IrDetectorCol_SetRisingEdgeStateFunc(ToggleLed2);
+//
+//  IrDetectorSel_SetFallingEdgeStateFunc(ToggleLed2);
+//  IrDetectorSel_SetRisingEdgeStateFunc(ToggleLed2);
   ColorDetector_SetColorReadyFunc(SlotColorReady);
   
   while(1)
     {
       TaskMenager_Run();
       ColorDetector_GetColor();
-      pos = EncoderDriv_GetPosition();
-      speed = EncoderDriv_GetSpeed();
+      pos = EncoderSel_GetPosition();
+      speed = EncoderSel_GetSpeed();
     }
 }
