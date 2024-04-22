@@ -7,7 +7,9 @@
 #include "SysTick.h"
 #include "TaskMenager.h"
 #include "ColorDetector.h"
-
+#include "EncoderSel.h"
+#include "EncoderDriv.h"
+#include <stdint.h>
 void ToggleLed2()
 {
   GPIOA->ODR ^= GPIO_ODR_OD5;
@@ -45,7 +47,8 @@ void SlotColorReady(ColorDetector_Color color)
 {
 
 }
-
+float pos;
+float speed;
 int main(void)
 {
   Clock_Init();
@@ -54,6 +57,8 @@ int main(void)
   IrDetectorSel_Init();
   IrDetectorCol_Init();
   ColorDetector_Init();
+  EncoderSel_Init();
+  EncoderDriv_Init();
 
   InitLed2();
   InitB1();
@@ -69,5 +74,7 @@ int main(void)
     {
       TaskMenager_Run();
       ColorDetector_GetColor();
+      pos = EncoderDriv_GetPosition();
+      speed = EncoderDriv_GetSpeed();
     }
 }
