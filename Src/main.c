@@ -10,6 +10,8 @@
 #include "TaskMenager.h"
 #include "ColorDetector.h"
 #include <stdint.h>
+#include "MotorDriv.h"
+#include "MotorSel.h"
 void ToggleLed2()
 {
   GPIOA->ODR ^= GPIO_ODR_OD5;
@@ -35,7 +37,7 @@ void InitB1()
 {
   RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
 
-  GPIOC->MODER &= ~GPIO_MODER_MODE9;
+  GPIOC->MODER &= ~GPIO_MODER_MODE13;
   GPIOC->MODER |= 0 << GPIO_MODER_MODE13_Pos;
 
   GPIOC->PUPDR &= ~GPIO_PUPDR_PUPD13_Msk;
@@ -50,8 +52,7 @@ void SlotColorReady(ColorDetector_Color color)
 float pos;
 float speed;
 int main(void)
-{
-  Clock_Init();
+{																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										Clock_Init();
   SystemCoreClockUpdate();
   SysTick_Init();
   IrDetectorSel_Init();
@@ -59,9 +60,11 @@ int main(void)
   ColorDetector_Init();
   EncoderSel_Init();
   EncoderDriv_Init();
+  MotorDriv_Init();
+  MotorSel_Init();
 
 //  InitLed2();
-  InitB1();
+//  InitB1();
   
 //  IrDetectorCol_SetFallingEdgeStateFunc(ToggleLed2);
 //  IrDetectorCol_SetRisingEdgeStateFunc(ToggleLed2);
@@ -73,7 +76,7 @@ int main(void)
   while(1)
     {
       TaskMenager_Run();
-      ColorDetector_GetColor();
+//      ColorDetector_GetColor();
       pos = EncoderSel_GetPosition();
       speed = EncoderSel_GetSpeed();
     }

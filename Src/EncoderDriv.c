@@ -17,7 +17,7 @@ static void Loop()
   uint16_t position = TIM1->CNT;
   
   if(abs(oldPosition-position) < 1000)
-	  speed = (oldPosition-position)*2*M_PI*10/2500;
+	  speed = (oldPosition-position)*2*M_PI*1000/2500;
   oldPosition = position;
 }
 
@@ -49,7 +49,7 @@ void EncoderDriv_Init()
 
   TIM1->CR1 |= (TIM_CR1_CEN);
 
-  Task task = { .Func = Loop, .Period = 10, .Prioryty = 1};
+  Task task = { .Func = Loop, .Period = 1, .Prioryty = 1};
   TaskMenager_AddTask(task);
   
 }
