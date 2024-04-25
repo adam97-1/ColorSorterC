@@ -7,55 +7,71 @@
 //IN2 -- PB8/TIM4_CH3
 //IN1 -- PB9/TIM4_CH4
 
-static uint32_t maxPwm = 2000;
+static float maxPwm = 2000;
 static float maxSpeed = 15.6f;
 
 static uint32_t period = 1;
 
-static float targetSpeed = 3.f;
+static float targetSpeed = 10.f;
 
 static float sumSpeed = 0.f;
 static float oldSpeed = 0.f;
 
-static float Kp_Speed = 0.8f;
-static float Ki_Speed = 0.0f;
-static float Kd_Speed = 0.08f;
-static float saturationSpeed = 3.5f;
-  
-static void Loop()
+static float Kp_Speed = 300.f;
+static float Ki_Speed = 10.f;
+static float Kd_Speed = 0.f;
+static float saturationSpeed = 100000.0f;
+float outDeb = 0;
+float speedDeb = 0;
+float speederrorDeb = 0;
+
+static void Loop2()
 {
 	float speed = EncoderDriv_GetSpeed();
 
-	  sumSpeed += (targetSpeed - speed)/(period*0.001);
-	  float sumSaturtionSpeed = Ki_Speed*sumSpeed;
-	  if(sumSaturtionSpeed > saturationSpeed)
-		  sumSaturtionSpeed = saturationSpeed;
-	  else if(sumSaturtionSpeed < -saturationSpeed)
-		  sumSaturtionSpeed = -saturationSpeed;
+	if(targetSpeed > maxSpeed)
+		targetSpeed = maxSpeed;
+	else if(targetSpeed < -maxSpeed)
+		targetSpeed = -maxSpeed;
 
-	  float dSpeed = (speed - oldSpeed)/period;
+	float speed_error = targetSpeed - speed;
 
-	  float diffSpeed = targetSpeed - speed;
+	sumSpeed += speed_error;//  /(period*0.0001);
+	if(sumSpeed > saturationSpeed)
+		sumSpeed = saturationSpeed;
+	else if(sumSpeed < -saturationSpeed)
+	sumSpeed = -saturationSpeed;
 
-	  float newSpeed = Kp_Speed*diffSpeed + sumSaturtionSpeed + Kd_Speed*dSpeed;
+	float out = 	Kp_Speed * speed_error +
+					Ki_Speed * sumSpeed +
+					Kd_Speed * (speed - oldSpeed);
+					//(period*0.001);
 
-	  int32_t PWM = newSpeed*maxPwm/maxSpeed;
-	  if(newSpeed > 0)
-	  {
-		  if (PWM > maxPwm)
-			  PWM = maxPwm;
-		  TIM4->CCR3 = 0;
-		  TIM4->CCR4 = PWM;
-	  }
-	  else
-	  {
-		  PWM *= -1;
-		  if (PWM > maxPwm)
-			  PWM = maxPwm;
-		  TIM4->CCR3 = PWM;
-		  TIM4->CCR4 = 0;
-	  }
-	  oldSpeed = speed;
+	if(out > maxPwm)
+	{
+		out = maxPwm;
+		sumSpeed -= speed_error;
+	}
+	else if(out < -maxPwm)
+	{
+		out = -maxPwm;
+		sumSpeed -= speed_error;
+	}
+
+	if(out > 0)
+	{
+		TIM4->CCR3 = 0;
+		TIM4->CCR4 = (uint32_t)out;
+	}
+	else
+	{
+		TIM4->CCR3 = (uint32_t)-out;;
+		TIM4->CCR4 = 0;
+	}
+	outDeb = out;
+	speedDeb = speed;
+	speederrorDeb = speed_error;
+	oldSpeed = speed;
 }
 
 void MotorDriv_Init()
@@ -84,6 +100,6 @@ void MotorDriv_Init()
 
   TIM4->CR1 |= (TIM_CR1_CEN);
 
-  Task task = {.Func = Loop, .Period = 10, .Prioryty = 1};
+  Task task = {.Func = Loop2, .Period = period, .Prioryty = 1};
   TaskMenager_AddTask(task);
 }

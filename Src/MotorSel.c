@@ -1,14 +1,16 @@
 #include "MotorSel.h"
 #include <stm32f446xx.h>
 #include <stdint.h>
+#include <math.h>
 #include "TaskMenager.h"
 #include "EncoderSel.h"
 
 //IN2 -- PB6/TIM4_CH1
 //IN1 -- PA7/TIM14_CH1
 
-static uint32_t maxPwm = 2000;
+static float maxPwm = 2000;
 static float maxSpeed = 15.6f;
+static float maxPosition = 2*M_PI;
 
 static uint32_t period = 1;
 
@@ -19,68 +21,147 @@ static float sumSpeed = 0.f;
 static float oldPosition = 0.f;
 static float oldSpeed = 0.f;
 
-static float Kp_Position = 1.2f;
-static float Ki_Position = 0.2f;
-static float Kd_Position = 0.05f;
-static float saturationPosition = 3.5f;
+static float Kp_Position = 5.f;
+static float Ki_Position = 0.0f;
+static float Kd_Position = 0.0f;
+static float saturationPosition = 100000.f;
 
-static float Kp_Speed = 0.8f;
-static float Ki_Speed = 0.0f;
-static float Kd_Speed = 0.08f;
-static float saturationSpeed = 3.5f;
+static float Kp_Speed = 300.f;
+static float Ki_Speed = 10.0f;
+static float Kd_Speed = 0.0f;
+static float saturationSpeed = 1000000.f;
+
+static float outPositionDeb =0;
+float outDeb2 = 0;
+float pos_err_calc_up(float akt_pos, float exp_pos)
+{
+
+	float distance = 0;
+
+	if(akt_pos >= exp_pos)
+	{
+		distance =  2*M_PI - akt_pos + exp_pos;
+	}
+	else
+	{
+		distance = exp_pos - akt_pos;
+	}
+
+	return distance;
+}
+
+float pos_err_calc_dwn(float akt_pos, float exp_pos)
+{
+
+	float distance = 0;
+
+	if(akt_pos >= exp_pos)
+	{
+		distance =   akt_pos - exp_pos;
+	}
+	else
+	{
+		distance = 2*M_PI - exp_pos + akt_pos;
+	}
+
+	return distance;
+}
+
+float pos_err_calc(float akt_pos, float exp_pos)
+{
+
+	float distance = 0;
+	float step1, step2;
+
+	step1 = pos_err_calc_up(akt_pos, exp_pos);
+	step2 = pos_err_calc_dwn(akt_pos, exp_pos);
+	if(step1<step2)
+		distance = step1;
+	else
+		distance = -step2;
+
+	return distance;
+}
 
 static void Loop()
 {
 
-  float position = EncoderSel_GetPosition();
+	float position = EncoderSel_GetPosition();
 
-  sumPosition += (targetPosition - position)/(period*0.001);
-  float sumSaturtionPosition = Ki_Position*sumPosition;
-  if(sumSaturtionPosition > saturationPosition)
-	  sumSaturtionPosition = saturationPosition;
-  else if(sumSaturtionPosition < -saturationPosition)
-	  sumSaturtionPosition = -saturationPosition;
+	if(targetPosition > maxPosition)
+		targetPosition = maxPosition;
+	else if(targetPosition < 0)
+		targetPosition = 0;
 
-  float dPosition= (position - oldPosition)/(period*0.001);
+	float position_error = pos_err_calc( position, targetPosition);
 
-  float diffPosition = targetPosition - position;
+	sumPosition += position_error;//  /(period*0.0001);
+	if(sumPosition > saturationPosition)
+		sumPosition = saturationPosition;
+	else if(sumPosition < -saturationPosition)
+		sumPosition = -saturationPosition;
 
-  float targetSpeed = Kp_Position*diffPosition + sumSaturtionPosition + Kd_Position*dPosition;
+	float outPosition = 	Kp_Position * position_error +
+							Ki_Position * sumPosition +
+							Kd_Position * (position - oldPosition);
+							//(period*0.001);*/
 
+	float speed = -EncoderSel_GetSpeed();
 
-  float speed = EncoderSel_GetSpeed();
+	if(outPosition > maxSpeed)
+	{
+		outPosition = maxSpeed;
+		sumPosition -= position_error;
+	}
+	else if(outPosition < -maxSpeed)
+	{
+		outPosition = -maxSpeed;
+		sumPosition -= position_error;
+	}
 
-  sumSpeed += (targetSpeed - speed)/(period*0.001);
-  float sumSaturtionSpeed = Ki_Speed*sumSpeed;
-  if(sumSaturtionSpeed > saturationSpeed)
-	  sumSaturtionSpeed = saturationSpeed;
-  else if(sumSaturtionSpeed < -saturationSpeed)
-	  sumSaturtionSpeed = -saturationSpeed;
+	float speed_error = outPosition - speed;
 
-  float dSpeed = (speed - oldSpeed)/period;
+	sumSpeed += speed_error;//  /(period*0.0001);
+	if(sumSpeed > saturationSpeed)
+		sumSpeed = saturationSpeed;
+	else if(sumSpeed < -saturationSpeed)
+	sumSpeed = -saturationSpeed;
 
-  float diffSpeed= targetSpeed - speed;
+	float out = 		Kp_Speed * speed_error +
+						Ki_Speed * sumSpeed +
+						Kd_Speed * (speed - oldSpeed);
+//						(period*0.001);
 
-  float newSpeed = Kp_Speed*diffSpeed + sumSaturtionSpeed + Kd_Speed*dSpeed;
+	if(out > maxPwm)
+	{
+		out = maxPwm;
+		//sumPosition -= position_error;
+		sumSpeed -= speed_error;
+	}
+	else if(out < -maxPwm)
+	{
+		out = -maxPwm;
+		//sumPosition -= position_error;
+		sumSpeed -= speed_error;
+	}
 
-  int32_t PWM = newSpeed*maxPwm/maxSpeed;
-  if(newSpeed > 0)
-  {
-	  if (PWM > maxPwm)
-		  PWM = maxPwm;
-	  TIM14->CCR1 = 0;
-	  TIM4->CCR1 = PWM;
-  }
-  else
-  {
-	  PWM *= -1;
-	  if (PWM > maxPwm)
-		  PWM = maxPwm;
-	  TIM4->CCR1 = 0;
-	  TIM14->CCR1 = PWM;
-  }
-  oldPosition = position;
-  oldSpeed = speed;
+	outDeb2 = out;
+
+	if(out > 0)
+	{
+		TIM14->CCR1 = 0;
+		TIM4->CCR1 = (uint32_t)out;
+	}
+	else
+	{
+		TIM14->CCR1 = (uint32_t)-out;
+		TIM4->CCR1 = 0;
+	}
+	oldPosition= position;
+	oldSpeed = speed;
+
+	outPositionDeb = outPosition;
+
 }
 
 void MotorSel_Init()
@@ -121,7 +202,6 @@ void MotorSel_Init()
 
   TIM4->ARR = maxPwm;
   TIM14->ARR = maxPwm;
-  
 
   TIM4->CR1 |= (TIM_CR1_CEN);
   TIM14->CR1 |= (TIM_CR1_CEN);

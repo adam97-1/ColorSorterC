@@ -76,8 +76,5 @@ int main(void)
   while(1)
     {
       TaskMenager_Run();
-//      ColorDetector_GetColor();
-      pos = EncoderSel_GetPosition();
-      speed = EncoderSel_GetSpeed();
     }
 }

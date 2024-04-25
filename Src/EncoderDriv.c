@@ -16,7 +16,7 @@ static void Loop()
   static uint16_t  oldPosition = 0;
   uint16_t position = TIM1->CNT;
   
-  if(abs(oldPosition-position) < 1000)
+  if(abs(oldPosition-position) < 100)
 	  speed = (oldPosition-position)*2*M_PI*1000/2500;
   oldPosition = position;
 }
