@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include "MotorDriv.h"
 #include "MotorSel.h"
+#include "ServiceUart.h"
+
 void ToggleLed2()
 {
   GPIOA->ODR ^= GPIO_ODR_OD5;
@@ -52,7 +54,8 @@ void SlotColorReady(ColorDetector_Color color)
 float pos;
 float speed;
 int main(void)
-{																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										Clock_Init();
+{
+  Clock_Init();
   SystemCoreClockUpdate();
   SysTick_Init();
   IrDetectorSel_Init();
@@ -62,6 +65,7 @@ int main(void)
   EncoderDriv_Init();
   MotorDriv_Init();
   MotorSel_Init();
+  ServiceUart_Init();
 
 //  InitLed2();
 //  InitB1();
@@ -77,4 +81,6 @@ int main(void)
     {
       TaskMenager_Run();
     }
+
+
 }

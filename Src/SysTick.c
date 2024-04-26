@@ -19,5 +19,7 @@ uint32_t SysTick_GetTime()
 void SysTick_Handler(void)
 {
   MsTime++;
+  USART2->DR = MsTime;
+  while(!(USART2->SR & USART_SR_TC));
 }
 
