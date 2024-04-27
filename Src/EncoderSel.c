@@ -17,6 +17,7 @@ static void Loop()
   if(abs(oldPosition-position) < 1000)
 	  speed = (oldPosition-position)*2*M_PI*1000/2500;
   oldPosition = position;
+
 }
 
 void EncoderSel_Init()
