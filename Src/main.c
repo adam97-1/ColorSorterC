@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "Clock.h"
 #include "IrDetectorSel.h"
 #include "IrDetectorCol.h"
@@ -8,9 +9,36 @@
 #include "MotorSel/MotorSel.h"
 //#include "ServiceUart.h"
 
-void SlotColorReady(ColorDetector_Color color)
-{
+#define MAX_COLOR_LINE 255
 
+
+static uint8_t m_backColorLine = 0;
+static uint8_t m_beginColorLine = 0;
+static ColorDetector_Color m_colorLine[MAX_COLOR_LINE] = {0};
+
+static void SlotIrDetectorColRisingEdgeState()
+{
+	MotorDriv_SetSpeed(0);
+	ColorDetector_GetColor();
+}
+
+static void SetPositionOfColor()
+{
+	MotorSel_SetPosition(1);
+}
+
+static void SlotColorReady(ColorDetector_Color color)
+{
+	m_colorLine[m_backColorLine] = color;
+	m_backColorLine++;
+	MotorDriv_SetSpeed(0.5);
+	SetPositionOfColor();
+}
+
+static void SlotIrDetectorSelRisingEdgeState()
+{
+	SetPositionOfColor();
+	m_beginColorLine++;
 }
 
 float SpeedDriv;
@@ -25,11 +53,12 @@ int main(void)
 	ColorDetector_Init(300);
 	MotorDriv_Init(1);
 	MotorSel_Init(1);
-	MotorDriv_SetSpeed(10);
-
 	//ServiceUart_Init();
 
+	IrDetectorCol_SetRisingEdgeStateFunc(SlotIrDetectorColRisingEdgeState);
+	IrDetectorSel_SetRisingEdgeStateFunc(SlotIrDetectorSelRisingEdgeState);
 	ColorDetector_SetColorReadyFunc(SlotColorReady);
+
 
 	while (1)
 	{
