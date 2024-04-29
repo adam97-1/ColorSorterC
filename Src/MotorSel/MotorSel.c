@@ -1,9 +1,9 @@
-#include "MotorSel.h"
+#include "MotorSel/MotorSel.h"
 #include <stm32f446xx.h>
 #include <stdint.h>
 #include <math.h>
 #include "TaskMenager.h"
-#include "EncoderSel.h"
+#include "MotorSel/EncoderSel.h"
 
 //IN2 -- PB6/TIM4_CH1
 //IN1 -- PA7/TIM14_CH1

@@ -1,28 +1,37 @@
-#include "EncoderDriv.h"
+#include "MotorDriv/EncoderDriv.h"
 #include <stm32f446xx.h>
 #include <stdint.h>
 #include <stdint.h>
 #include <math.h>
 #include <stdlib.h>
 #include "TaskMenager.h"
+#include "Functions.h"
 
 //PA9 -- CC1
 //PA8 -- CC2
 
-static float speed = 0;
+static float m_speed = 0;
+static uint32_t m_msPeriod = 1;
+static uint32_t m_maxEncoderValue = 2500;
+
 
 static void Loop()
 {
-  static uint16_t  oldPosition = 0;
-  uint16_t position = TIM1->CNT;
+  static float  oldPosition = 0;
+  float position = EncoderDriv_GetPosition();
   
-  if(abs(oldPosition-position) < 100)
-	  speed = (oldPosition-position)*2*M_PI*1000/2500;
+  float diffPosition = position - oldPosition;
+
+  if(fabs(diffPosition) < 2.5)
+	  m_speed = diffPosition/(m_msPeriod*0.001f);
   oldPosition = position;
 }
 
-void EncoderDriv_Init()
+void EncoderDriv_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 {
+  m_msPeriod = msPeriod;
+  m_maxEncoderValue = maxEncoderValue;
+
   RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
   RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 
@@ -45,21 +54,27 @@ void EncoderDriv_Init()
   TIM1->SMCR &= ~(TIM_SMCR_SMS_Msk);
   TIM1->SMCR |= (3 << TIM_SMCR_SMS_Pos);
 
-  TIM1->ARR = 2500;
+  TIM1->ARR = m_maxEncoderValue;
 
   TIM1->CR1 |= (TIM_CR1_CEN);
 
-  Task task = { .Func = Loop, .Period = 1, .Prioryty = 1};
+  Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1};
   TaskMenager_AddTask(task);
   
 }
 
+void EncoderDriv_SetMaxEncoderValue(uint32_t maxEncoderValue)
+{
+	m_maxEncoderValue = maxEncoderValue;
+}
+
+
 float EncoderDriv_GetSpeed()
 {
-  return speed;
+  return m_speed;
 }
 
 float EncoderDriv_GetPosition()
 {
-  return TIM1->CNT*2*M_PI/2500;
+  return TIM1->CNT*2*M_PI/m_maxEncoderValue;
 }

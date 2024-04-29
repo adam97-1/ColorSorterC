@@ -1,5 +1,5 @@
-#include <EncoderDriv.h>
-#include <EncoderSel.h>
+#include <MotorDriv/EncoderDriv.h>
+#include <MotorSel/EncoderSel.h>
 #include <stdint.h>
 #include <stm32f446xx.h>
 #include <system_stm32f4xx.h>
@@ -10,10 +10,9 @@
 #include "TaskMenager.h"
 #include "ColorDetector.h"
 #include <stdint.h>
-#include "MotorDriv.h"
-#include "MotorSel.h"
-#include "ServiceUart.h"
-
+#include "MotorDriv/MotorDriv.h"
+#include "MotorSel/MotorSel.h"
+//#include "ServiceUart.h"
 void ToggleLed2()
 {
   GPIOA->ODR ^= GPIO_ODR_OD5;
@@ -61,11 +60,10 @@ int main(void)
   IrDetectorSel_Init();
   IrDetectorCol_Init();
   ColorDetector_Init();
-  EncoderSel_Init();
-  EncoderDriv_Init();
   MotorDriv_Init();
-  MotorSel_Init();
-  ServiceUart_Init();
+  MotorDriv_SetSpeed(10);
+//  MotorSel_Init();
+  //ServiceUart_Init();
 
 //  InitLed2();
 //  InitB1();
@@ -80,6 +78,8 @@ int main(void)
   while(1)
     {
       TaskMenager_Run();
+      speed = MotorDriv_GetSpeed();
+      pos = EncoderDriv_GetPosition();
     }
 
 

@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "TaskMenager.h"
 #include "SysTick.h"
-#include "EncoderDriv.h"
-#include "EncoderSel.h"
+#include "MotorDriv/EncoderDriv.h"
+#include "MotorSel/EncoderSel.h"
 #include "Crc32.h"
 
 typedef struct
