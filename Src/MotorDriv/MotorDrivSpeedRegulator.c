@@ -13,30 +13,33 @@ static uint32_t m_diffMsTime = 1;
 static float m_errorIntegral = 0;
 static float m_oldValueError = 0;
 
-void MotorDrivSpeedRegulator_Init(float Kp, float Ki, float Kd, float maxIntegral, float maxInValue, float maxOutValue, uint32_t diffMsTime)
+void MotorDrivSpeedRegulator_Init(	float Kp, float Ki, float Kd,
+									float maxIntegral, float maxInValue, float maxOutValue,
+									uint32_t diffMsTime)
 {
-  m_Kp = Kp;
-  m_Ki = Ki;
-  m_Kd = Kd;
-  m_maxIntegral = maxIntegral;
-  m_maxInValue = maxInValue;
-  m_maxOutValue = maxOutValue;
-  m_diffMsTime = diffMsTime;
+	m_Kp = Kp;
+	m_Ki = Ki;
+	m_Kd = Kd;
+	m_maxIntegral = maxIntegral;
+	m_maxInValue = maxInValue;
+	m_maxOutValue = maxOutValue;
+	m_diffMsTime = diffMsTime;
 }
 
 void MotorDrivSpeedRegulator_SetKp(float Kp)
 {
-  m_Kp = Kp;
+	m_Kp = Kp;
 }
 
 void MotorDrivSpeedRegulator_SetKi(float Ki)
 {
-  m_Ki = Ki;
-};
+	m_Ki = Ki;
+}
+;
 
 void MotorDrivSpeedRegulator_SetKd(float Kd)
 {
-  m_Kd = Kd;
+	m_Kd = Kd;
 }
 
 void MotorDrivSpeedRegulator_SetMaxIntegral(float maxIntegral)
@@ -56,29 +59,30 @@ void MotorDrivSpeedRegulator_SetMaxOutValue(float maxOutValue)
 
 static inline float Saturation(float value, float maxValue)
 {
-	  if(value > maxValue)
-		  value = maxValue;
-	  else if(value < -maxValue)
-		  value = -maxValue;
-	  return value;
+	if (value > maxValue)
+		value = maxValue;
+	else if (value < -maxValue)
+		value = -maxValue;
+	return value;
 }
 
 float MotorDrivSpeedRegulator_Calculate(float targetValue, float actualValue)
 {
-  targetValue = Saturation(targetValue, m_maxInValue);
-  float errorValue = targetValue - actualValue;
-  
-  m_errorIntegral += errorValue*(m_diffMsTime*0.001f);
-  m_errorIntegral = Saturation(m_errorIntegral, m_maxIntegral);
+	targetValue = Saturation(targetValue, m_maxInValue);
+	float errorValue = targetValue - actualValue;
 
-  float errorDiffValue = (m_oldValueError - errorValue)/(m_diffMsTime*0.001f);
-  m_oldValueError = errorValue;
+	m_errorIntegral += errorValue * (m_diffMsTime * 0.001f);
+	m_errorIntegral = Saturation(m_errorIntegral, m_maxIntegral);
 
-  float out = (m_Kp * errorValue + m_Ki * m_errorIntegral + m_Kd * errorDiffValue);
-  out = Saturation(out, m_maxOutValue);
+	float errorDiffValue = (m_oldValueError - errorValue)
+			/ (m_diffMsTime * 0.001f);
+	m_oldValueError = errorValue;
 
-  if(fabs(out) >= m_maxOutValue)
-	  m_errorIntegral -= errorValue*(m_diffMsTime*0.001f);
+	float out = (m_Kp * errorValue + m_Ki * m_errorIntegral	+ m_Kd * errorDiffValue);
+	out = Saturation(out, m_maxOutValue);
 
-  return out;
+	if (fabs(out) >= m_maxOutValue)
+		m_errorIntegral -= errorValue * (m_diffMsTime * 0.001f);
+
+	return out;
 }

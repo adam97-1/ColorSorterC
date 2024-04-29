@@ -1,5 +1,7 @@
 #pragma once
 
-void ServiceUart_Init();
+#include <stdint.h>
+
+void ServiceUart_Init(uint32_t msPeriod);
 
   

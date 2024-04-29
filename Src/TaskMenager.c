@@ -4,33 +4,33 @@
 
 #define MAX_TASK 255
 
-static size_t TaskCount = 0;
+static size_t m_taskCount = 0;
 
-Task TaskList[MAX_TASK] = {NULL};
+Task m_taskList[MAX_TASK] = { NULL };
 
 void TaskMenager_Run()
 {
-  static uint32_t OldMsTime = 0;
-  uint32_t MsTime = SysTick_GetTime();
+	static uint32_t oldMsTime = 0;
+	uint32_t msTime = SysTick_GetTime();
 
-  if(OldMsTime == MsTime)
-    return;
-  OldMsTime = MsTime;
-  
-  for(size_t i = TaskCount - 1; i < TaskCount; i--)
-    {
-      if(TaskList[i].Func == NULL)
-	continue;
-      if((MsTime % TaskList[i].Period) == 0)
-	TaskList[i].Func();
-    }
+	if (oldMsTime == msTime)
+		return;
+	oldMsTime = msTime;
+
+	for (size_t i = m_taskCount - 1; i < m_taskCount; i--)
+	{
+		if (m_taskList[i].Func == NULL)
+			continue;
+		if ((msTime % m_taskList[i].Period) == 0)
+			m_taskList[i].Func();
+	}
 }
 
 bool TaskMenager_AddTask(Task task)
 {
-  if(TaskCount > MAX_TASK)
-    return false;
-  TaskList[TaskCount] = task;
-  TaskCount++;
-  return true;
+	if (m_taskCount > MAX_TASK)
+		return false;
+	m_taskList[m_taskCount] = task;
+	m_taskCount++;
+	return true;
 }

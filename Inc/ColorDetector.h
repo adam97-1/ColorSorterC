@@ -15,7 +15,7 @@ typedef struct
   uint32_t Blue;
 }ColorDetector_Color;
 
-void ColorDetector_Init();
+void ColorDetector_Init(uint32_t msPeriod);
 const ColorDetector_Color* ColorDetector_GetColor();
 bool ColorDetector_IsColorReady();
 void ColorDetector_SetColorReadyFunc(void (*func)(ColorDetector_Color color));
