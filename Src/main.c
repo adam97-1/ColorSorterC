@@ -50,8 +50,8 @@ void SlotColorReady(ColorDetector_Color color)
 {
 
 }
-float pos;
-float speed;
+float PosDriv;
+float SpeedDriv;
 int main(void)
 {
   Clock_Init();
@@ -78,8 +78,8 @@ int main(void)
   while(1)
     {
       TaskMenager_Run();
-      speed = MotorDriv_GetSpeed();
-      pos = EncoderDriv_GetPosition();
+      SpeedDriv = MotorDriv_GetSpeed();
+      PosDriv = EncoderDriv_GetPosition();
     }
 
 

@@ -13,11 +13,11 @@ static float m_maxSpeed = 15.6;
 
 static float m_speed = 0;
 
-static uint32_t m_period = 10;
+static uint32_t m_period = 1;
 
 static void Loop()
 {
-	float out = MotorDrivSpeedRegulator_SpeedCalculate(m_speed, EncoderDriv_GetSpeed());
+	float out = MotorDrivSpeedRegulator_Calculate(m_speed, EncoderDriv_GetSpeed());
 
 	if(out > 0)
 	{
@@ -58,7 +58,7 @@ void MotorDriv_Init()
 
   TIM4->CR1 |= (TIM_CR1_CEN);
 
-  MotorDrivSpeedRegulator_Init(50, 0, 0, 1000000, m_maxSpeed, m_maxPwm, m_period);
+  MotorDrivSpeedRegulator_Init(300, 0, 0, 1000000, m_maxSpeed, m_maxPwm, m_period);
   EncoderDriv_Init(m_period, 2500);
 
   Task task = {.Func = Loop, .Period = m_period, .Prioryty = 1};

@@ -4,163 +4,36 @@
 #include <math.h>
 #include "TaskMenager.h"
 #include "MotorSel/EncoderSel.h"
+#include "MotorSel/MotorSelSpeedRegulator.h"
+#include "MotorSel/MotorSelPositionRegulator.h"
+
 
 //IN2 -- PB6/TIM4_CH1
 //IN1 -- PA7/TIM14_CH1
 
-static float maxPwm = 2000;
-static float maxSpeed = 15.6f;
-static float maxPosition = 2*M_PI;
+static float m_maxPwm = 2000;
+static float m_maxSpeed = 15.6;
 
-static uint32_t period = 1;
+static float m_position = 0;
 
-static float targetPosition = 3.f;
-
-static float sumPosition= 0.f;
-static float sumSpeed = 0.f;
-static float oldPosition = 0.f;
-static float oldSpeed = 0.f;
-
-static float Kp_Position = 5.f;
-static float Ki_Position = 0.0f;
-static float Kd_Position = 0.0f;
-static float saturationPosition = 100000.f;
-
-static float Kp_Speed = 300.f;
-static float Ki_Speed = 10.0f;
-static float Kd_Speed = 0.0f;
-static float saturationSpeed = 1000000.f;
-
-static float outPositionDeb =0;
-float outDeb2 = 0;
-float pos_err_calc_up(float akt_pos, float exp_pos)
-{
-
-	float distance = 0;
-
-	if(akt_pos >= exp_pos)
-	{
-		distance =  2*M_PI - akt_pos + exp_pos;
-	}
-	else
-	{
-		distance = exp_pos - akt_pos;
-	}
-
-	return distance;
-}
-
-float pos_err_calc_dwn(float akt_pos, float exp_pos)
-{
-
-	float distance = 0;
-
-	if(akt_pos >= exp_pos)
-	{
-		distance =   akt_pos - exp_pos;
-	}
-	else
-	{
-		distance = 2*M_PI - exp_pos + akt_pos;
-	}
-
-	return distance;
-}
-
-float pos_err_calc(float akt_pos, float exp_pos)
-{
-
-	float distance = 0;
-	float step1, step2;
-
-	step1 = pos_err_calc_up(akt_pos, exp_pos);
-	step2 = pos_err_calc_dwn(akt_pos, exp_pos);
-	if(step1<step2)
-		distance = step1;
-	else
-		distance = -step2;
-
-	return distance;
-}
+static uint32_t m_period = 1;
 
 static void Loop()
 {
 
-	float position = EncoderSel_GetPosition();
-
-	if(targetPosition > maxPosition)
-		targetPosition = maxPosition;
-	else if(targetPosition < 0)
-		targetPosition = 0;
-
-	float position_error = pos_err_calc( position, targetPosition);
-
-	sumPosition += position_error;//  /(period*0.0001);
-	if(sumPosition > saturationPosition)
-		sumPosition = saturationPosition;
-	else if(sumPosition < -saturationPosition)
-		sumPosition = -saturationPosition;
-
-	float outPosition = 	Kp_Position * position_error +
-							Ki_Position * sumPosition +
-							Kd_Position * (position - oldPosition);
-							//(period*0.001);*/
-
-	float speed = -EncoderSel_GetSpeed();
-
-	if(outPosition > maxSpeed)
-	{
-		outPosition = maxSpeed;
-		sumPosition -= position_error;
-	}
-	else if(outPosition < -maxSpeed)
-	{
-		outPosition = -maxSpeed;
-		sumPosition -= position_error;
-	}
-
-	float speed_error = outPosition - speed;
-
-	sumSpeed += speed_error;//  /(period*0.0001);
-	if(sumSpeed > saturationSpeed)
-		sumSpeed = saturationSpeed;
-	else if(sumSpeed < -saturationSpeed)
-	sumSpeed = -saturationSpeed;
-
-	float out = 		Kp_Speed * speed_error +
-						Ki_Speed * sumSpeed +
-						Kd_Speed * (speed - oldSpeed);
-//						(period*0.001);
-
-	if(out > maxPwm)
-	{
-		out = maxPwm;
-		//sumPosition -= position_error;
-		sumSpeed -= speed_error;
-	}
-	else if(out < -maxPwm)
-	{
-		out = -maxPwm;
-		//sumPosition -= position_error;
-		sumSpeed -= speed_error;
-	}
-
-	outDeb2 = out;
+	float speedOut = MotorSelPositionRegulator_Calculate(m_position, EncoderSel_GetPosition());
+	float out = MotorSelSpeedRegulator_Calculate(speedOut, EncoderSel_GetSpeed());
 
 	if(out > 0)
 	{
-		TIM14->CCR1 = 0;
-		TIM4->CCR1 = (uint32_t)out;
+		TIM4->CCR3 = 0;
+		TIM4->CCR4 = (uint32_t)out;
 	}
 	else
 	{
-		TIM14->CCR1 = (uint32_t)-out;
-		TIM4->CCR1 = 0;
+		TIM4->CCR3 = (uint32_t)-out;;
+		TIM4->CCR4 = 0;
 	}
-	oldPosition= position;
-	oldSpeed = speed;
-
-	outPositionDeb = outPosition;
 
 }
 
@@ -200,12 +73,32 @@ void MotorSel_Init()
 
   TIM14->CCER |= (TIM_CCER_CC1E);
 
-  TIM4->ARR = maxPwm;
-  TIM14->ARR = maxPwm;
+  TIM4->ARR = m_maxPwm;
+  TIM14->ARR = m_maxPwm;
 
   TIM4->CR1 |= (TIM_CR1_CEN);
   TIM14->CR1 |= (TIM_CR1_CEN);
 
-  Task task = {.Func = Loop, .Period = period, .Prioryty = 1};
+  MotorSelSpeedRegulator_Init(300, 0, 0, 1000000, m_maxSpeed, m_maxPwm, m_period);
+  MotorSelSpeedRegulator_Init(5, 0, 0, 1000000, m_maxSpeed, m_maxPwm, m_period);
+
+  EncoderSel_Init(m_period, 2500);
+
+  Task task = {.Func = Loop, .Period = m_period, .Prioryty = 1};
   TaskMenager_AddTask(task);
+}
+
+void MotorSel_SetPosition(float position)
+{
+	m_position = position;
+}
+
+float MotorSel_GetSpeed()
+{
+	return EncoderSel_GetSpeed();
+}
+
+float MotorSel_GetPosition()
+{
+	return EncoderSel_GetPosition();
 }

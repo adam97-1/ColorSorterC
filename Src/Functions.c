@@ -20,10 +20,10 @@ static float MinRadiusDiastanceDown(float position1, float position2)
 
 	float distance = 0;
 
-	if(position2 >= position1)
-		distance = position2 - position1;
+	if(position1 >= position2)
+		distance = position1 - position2;
 	else
-		distance = 2*(float)M_PI - position1 + position2;
+		distance = 2*(float)M_PI - position2 + position1;
 
 	return distance;
 }

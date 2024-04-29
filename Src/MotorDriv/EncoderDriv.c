@@ -20,10 +20,10 @@ static void Loop()
   static float  oldPosition = 0;
   float position = EncoderDriv_GetPosition();
   
-  float diffPosition = position - oldPosition;
+  float diffPosition = MinRadiusDiastance(oldPosition, position);
 
-  if(fabs(diffPosition) < 2.5)
-	  m_speed = diffPosition/(m_msPeriod*0.001f);
+  m_speed = diffPosition/(m_msPeriod*0.001f);
+
   oldPosition = position;
 }
 
