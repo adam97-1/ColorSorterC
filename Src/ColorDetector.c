@@ -170,22 +170,26 @@ static void Loop()
 	if (m_isColorMeasurment == false)
 		return;
 
-	uint32_t frequency = TIM3->CNT / 2;
+	uint32_t frequency = TIM3->CNT * 2;
 	TIM3->CNT = 0;
 
 	switch (subColorMeasurement)
 	{
 	case 0:
+		m_color.None = frequency;
+		SetColorFilter(ColorDetector_ColorFilter_Red);
+		break;
+	case 1:
 		m_color.Red = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_Green);
 		break;
-	case 1:
+	case 2:
 		m_color.Blue = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_Blue);
 		break;
-	case 2:
+	case 3:
 		m_color.Green = frequency;
-		SetColorFilter(ColorDetector_ColorFilter_Red);
+		SetColorFilter(ColorDetector_ColorFilter_None);
 		SetStateLed(ColorDetector_PinState_Low);
 		m_isColorReady = true;
 		m_isColorMeasurment = false;
@@ -195,7 +199,7 @@ static void Loop()
 		break;
 	}
 	subColorMeasurement++;
-	subColorMeasurement %= 3;
+	subColorMeasurement %= 4;
 }
 
 void ColorDetector_Init(uint32_t msPeriod )
@@ -204,7 +208,7 @@ void ColorDetector_Init(uint32_t msPeriod )
 
 	GpioInit();
 	TimerInit();
-	SetColorFilter(ColorDetector_ColorFilter_Red);
+	SetColorFilter(ColorDetector_ColorFilter_None);
 	SetPrescaler(ColorDetector_Prescaler_100);
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);

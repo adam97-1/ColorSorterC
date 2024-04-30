@@ -7,6 +7,21 @@
 //IN2 -- PB8/TIM4_CH3
 //IN1 -- PB9/TIM4_CH4
 
+static float maxPwm = 2000;
+static float maxSpeed = 15.6f;
+
+static uint32_t period = 1;
+
+static float targetSpeed = 1.f;
+
+static float sumSpeed = 0.f;
+static float oldSpeed = 0.f;
+
+static float Kp_Speed = 300.f;
+static float Ki_Speed = 10.f;
+static float Kd_Speed = 0.f;
+static float saturationSpeed = 100000.0f;
+
 static float m_maxPwm = 2000;
 static float m_maxSpeed = 15.6;
 
@@ -57,10 +72,10 @@ void MotorDriv_Init(uint32_t msPeriod )
 
 	TIM4->CR1 |= (TIM_CR1_CEN);
 
-	MotorDrivSpeedRegulator_Init(300, 0, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
+	MotorDrivSpeedRegulator_Init(300, 10000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
 	EncoderDriv_Init(m_msPeriod, 2500);
 
-	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
+	Task task = { .Func = Loop, .Period = 1, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
 }
 void MotorDriv_SetSpeed(float speed)

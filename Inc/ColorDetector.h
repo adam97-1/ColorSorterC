@@ -10,6 +10,7 @@ typedef enum
 
 typedef struct
 {
+  uint32_t None;
   uint32_t Red;
   uint32_t Green;
   uint32_t Blue;

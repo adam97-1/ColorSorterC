@@ -11,6 +11,10 @@ static float m_speed = 0;
 static uint32_t m_msPeriod = 1;
 static uint32_t m_maxEncoderValue = 2500;
 
+int test;
+float posDriv;
+float speedDriv;
+
 static void Loop()
 {
 	static float oldPosition = 0;
@@ -18,10 +22,15 @@ static void Loop()
 	float position = EncoderDriv_GetPosition();
 
 	float diffPosition = MinRadiusDiastance(oldPosition, position);
-
-	m_speed = diffPosition / (m_msPeriod * 0.001f);
-
+//	float diffPosition = position - oldPosition;
+//	if(fabs(diffPosition) <= 3)
+		m_speed = diffPosition / (m_msPeriod * 0.001f);
+	if(m_speed < -0.1)
+		test++;
 	oldPosition = position;
+
+	posDriv = position;
+	speedDriv = m_speed;
 }
 
 void EncoderDriv_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
@@ -41,10 +50,12 @@ void EncoderDriv_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 	GPIOA->AFR[1] &= ~(GPIO_AFRH_AFSEL8_Msk 	| GPIO_AFRH_AFSEL9_Msk);
 	GPIOA->AFR[1] |= (1 << GPIO_AFRH_AFSEL8_Pos | 1 << GPIO_AFRH_AFSEL9_Pos);
 
+	//TIM1->CR1 |= TIM_CR1_DIR;
+
 	TIM1->CCMR1 &= ~(TIM_CCMR1_CC1S_Msk | TIM_CCMR1_CC2S_Msk |
 					TIM_CCMR1_IC1F_Msk 	| TIM_CCMR1_IC2F_Msk);
 	TIM1->CCMR1 |= (1 << TIM_CCMR1_CC1S_Pos | 1 << TIM_CCMR1_CC2S_Pos	|
-					0 << TIM_CCMR1_IC1F_Pos | 0 << TIM_CCMR1_IC2F_Pos);
+					200 << TIM_CCMR1_IC1F_Pos | 200 << TIM_CCMR1_IC2F_Pos);
 
 	TIM1->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC2P |
 					TIM_CCER_CC1NP| TIM_CCER_CC2NP);

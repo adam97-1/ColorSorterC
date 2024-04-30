@@ -10,5 +10,6 @@ typedef struct
   uint8_t Prioryty;
 }Task;
 
+void TaskMenager_Init();
 void TaskMenager_Run();
 bool TaskMenager_AddTask(Task task);

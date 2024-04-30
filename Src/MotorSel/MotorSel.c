@@ -24,14 +24,13 @@ static void Loop()
 
 	if (out > 0)
 	{
-		TIM4->CCR3 = 0;
-		TIM4->CCR4 = (uint32_t) out;
+		TIM4->CCR1 = 0;
+		TIM14->CCR1 = (uint32_t) out;
 	} else
 	{
-		TIM4->CCR3 = (uint32_t) -out;
-		TIM4->CCR4 = 0;
+		TIM4->CCR1 = (uint32_t) -out;
+		TIM14->CCR1 = 0;
 	}
-
 }
 
 void MotorSel_Init(uint32_t msPeriod )
@@ -77,8 +76,8 @@ void MotorSel_Init(uint32_t msPeriod )
 	TIM4->CR1 |= (TIM_CR1_CEN);
 	TIM14->CR1 |= (TIM_CR1_CEN);
 
-	MotorSelSpeedRegulator_Init(300, 10, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
-	MotorSelSpeedRegulator_Init(5, 0, 0, 1000000, m_maxSpeed, m_maxPwm,	m_msPeriod);
+	MotorSelSpeedRegulator_Init(300, 10000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
+	MotorSelPositionRegulator_Init(20, 20, 0, 1000000, m_maxSpeed, m_maxPwm,	m_msPeriod);
 
 	EncoderSel_Init(m_msPeriod, 2500);
 
