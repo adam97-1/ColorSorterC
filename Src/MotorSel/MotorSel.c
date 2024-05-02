@@ -5,6 +5,7 @@
 #include "MotorSel/EncoderSel.h"
 #include "MotorSel/MotorSelSpeedRegulator.h"
 #include "MotorSel/MotorSelPositionRegulator.h"
+#include "ClearStack.h"
 
 //IN2 -- PB6/TIM4_CH1
 //IN1 -- PA7/TIM14_CH1
@@ -18,9 +19,16 @@ static uint32_t m_msPeriod = 1;
 
 static void Loop()
 {
+	ADD_TO_CLEAR();
+	float acutalPosition = EncoderSel_GetPosition();
+	CLEAR_STACK();
+	float speedOut = MotorSelPositionRegulator_Calculate(m_position, acutalPosition);
+	CLEAR_STACK();
 
-	float speedOut = MotorSelPositionRegulator_Calculate(m_position, EncoderSel_GetPosition());
-	float out = MotorSelSpeedRegulator_Calculate(speedOut, EncoderSel_GetSpeed());
+	float actualSpeed = EncoderSel_GetSpeed();
+	CLEAR_STACK();
+	float out = MotorSelSpeedRegulator_Calculate(speedOut, actualSpeed);
+	CLEAR_STACK();
 
 	if (out > 0)
 	{
@@ -35,6 +43,7 @@ static void Loop()
 
 void MotorSel_Init(uint32_t msPeriod )
 {
+	ADD_TO_CLEAR();
 	m_msPeriod  = msPeriod;
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -77,25 +86,36 @@ void MotorSel_Init(uint32_t msPeriod )
 	TIM14->CR1 |= (TIM_CR1_CEN);
 
 	MotorSelSpeedRegulator_Init(300, 10000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
+	CLEAR_STACK();
 	MotorSelPositionRegulator_Init(20, 20, 0, 1000000, m_maxSpeed, m_maxPwm,	m_msPeriod);
+	CLEAR_STACK();
 
 	EncoderSel_Init(m_msPeriod, 2500);
+	CLEAR_STACK();
 
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 }
 
 void MotorSel_SetPosition(float position)
 {
+	ADD_TO_CLEAR();
 	m_position = position;
 }
 
 float MotorSel_GetSpeed()
 {
-	return EncoderSel_GetSpeed();
+	ADD_TO_CLEAR();
+	float speed = EncoderSel_GetSpeed();
+	CLEAR_STACK();
+	return speed;
 }
 
 float MotorSel_GetPosition()
 {
-	return EncoderSel_GetPosition();
+	ADD_TO_CLEAR();
+	float position = EncoderSel_GetPosition();
+	CLEAR_STACK();
+	return position;
 }

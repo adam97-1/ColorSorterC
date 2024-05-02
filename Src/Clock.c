@@ -1,8 +1,10 @@
 #include "Clock.h"
 #include <stm32f446xx.h>
 #include <system_stm32f4xx.h>
+#include "ClearStack.h"
 
 void Clock_Init() {
+	ADD_TO_CLEAR();
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;
 
 	PWR->CR |= (3 << PWR_CR_VOS_Pos);
@@ -31,4 +33,6 @@ void Clock_Init() {
 		;
 
 	SystemCoreClockUpdate();
+	CLEAR_STACK();
+
 }

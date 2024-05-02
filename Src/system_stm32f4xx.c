@@ -217,8 +217,10 @@ void SystemInit(void)
   * @param  None
   * @retval None
   */
+#include "ClearStack.h"
 void SystemCoreClockUpdate(void)
 {
+	ADD_TO_CLEAR();
   uint32_t tmp = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
   
   /* Get SYSCLK source -------------------------------------------------------*/

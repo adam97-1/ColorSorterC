@@ -2,6 +2,7 @@
 #include <stm32f446xx.h>
 #include <stddef.h>
 #include "TaskMenager.h"
+#include "ClearStack.h"
 
 // S0  - PC6
 // S1  - PC5
@@ -44,6 +45,7 @@ static uint32_t m_msPeriod = 300;
 
 static inline void SetStateS0(ColorDetector_PinState state)
 {
+	ADD_TO_CLEAR();
 	switch (state)
 	{
 	case ColorDetector_PinState_High:
@@ -59,6 +61,7 @@ static inline void SetStateS0(ColorDetector_PinState state)
 
 static inline void SetStateS1(ColorDetector_PinState state)
 {
+	ADD_TO_CLEAR();
 	switch (state)
 	{
 	case ColorDetector_PinState_High:
@@ -73,6 +76,7 @@ static inline void SetStateS1(ColorDetector_PinState state)
 }
 static inline void SetStateS2(ColorDetector_PinState state)
 {
+	ADD_TO_CLEAR();
 	switch (state)
 	{
 	case ColorDetector_PinState_High:
@@ -87,6 +91,7 @@ static inline void SetStateS2(ColorDetector_PinState state)
 }
 static inline void SetStateS3(ColorDetector_PinState state)
 {
+	ADD_TO_CLEAR();
 	switch (state)
 	{
 	case ColorDetector_PinState_High:
@@ -102,6 +107,7 @@ static inline void SetStateS3(ColorDetector_PinState state)
 
 static inline void SetStateLed(ColorDetector_PinState state)
 {
+	ADD_TO_CLEAR();
 	switch (state)
 	{
 	case ColorDetector_PinState_High:
@@ -117,6 +123,7 @@ static inline void SetStateLed(ColorDetector_PinState state)
 
 static inline void GpioInit()
 {
+	ADD_TO_CLEAR();
 	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOCEN);
 
 	GPIOC->MODER &= ~(GPIO_MODER_MODE5_Msk 		| GPIO_MODER_MODE6_Msk		| GPIO_MODER_MODE10_Msk 	|
@@ -148,6 +155,7 @@ static inline void GpioInit()
 
 static inline void TimerInit()
 {
+	ADD_TO_CLEAR();
 	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIODEN);
 	RCC->APB1ENR |= (RCC_APB1ENR_TIM3EN);
 
@@ -165,6 +173,7 @@ static inline void TimerInit()
 
 static void Loop()
 {
+	ADD_TO_CLEAR();
 	static uint8_t subColorMeasurement = 0;
 
 	if (m_isColorMeasurment == false)
@@ -178,22 +187,28 @@ static void Loop()
 	case 0:
 		m_color.None = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_Red);
+		CLEAR_STACK();
 		break;
 	case 1:
 		m_color.Red = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_Green);
+		CLEAR_STACK();
 		break;
 	case 2:
 		m_color.Blue = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_Blue);
+		CLEAR_STACK();
 		break;
 	case 3:
 		m_color.Green = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_None);
+		CLEAR_STACK();
 		SetStateLed(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		m_isColorReady = true;
 		m_isColorMeasurment = false;
 		ColorReady(m_color);
+		CLEAR_STACK();
 		break;
 	default:
 		break;
@@ -204,34 +219,49 @@ static void Loop()
 
 void ColorDetector_Init(uint32_t msPeriod )
 {
+	ADD_TO_CLEAR();
 	m_msPeriod  = msPeriod;
 
 	GpioInit();
+	CLEAR_STACK();
 	TimerInit();
+	CLEAR_STACK();
 	SetColorFilter(ColorDetector_ColorFilter_None);
+	CLEAR_STACK();
 	SetPrescaler(ColorDetector_Prescaler_100);
+	CLEAR_STACK();
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 }
 
 static void SetColorFilter(ColorDetector_ColorFilter filter)
 {
+	ADD_TO_CLEAR();
 	switch (filter) {
 	case ColorDetector_ColorFilter_None:
 		SetStateS2(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		SetStateS3(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_ColorFilter_Red:
 		SetStateS2(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		SetStateS3(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_ColorFilter_Green:
 		SetStateS2(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		SetStateS3(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_ColorFilter_Blue:
 		SetStateS2(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		SetStateS3(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		break;
 	default:
 		break;
@@ -240,22 +270,31 @@ static void SetColorFilter(ColorDetector_ColorFilter filter)
 
 static void SetPrescaler(ColorDetector_Prescaler prescaler)
 {
+	ADD_TO_CLEAR()
 	switch (prescaler) {
 	case ColorDetector_Prescaler_0:
 		SetStateS0(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		SetStateS1(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_Prescaler_2:
 		SetStateS0(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		SetStateS1(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_Prescaler_20:
 		SetStateS0(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		SetStateS1(ColorDetector_PinState_Low);
+		CLEAR_STACK();
 		break;
 	case ColorDetector_Prescaler_100:
 		SetStateS0(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		SetStateS1(ColorDetector_PinState_High);
+		CLEAR_STACK();
 		break;
 	default:
 		break;
@@ -264,26 +303,32 @@ static void SetPrescaler(ColorDetector_Prescaler prescaler)
 
 const ColorDetector_Color* ColorDetector_GetColor()
 {
+	ADD_TO_CLEAR()
 	m_isColorReady = false;
 	m_isColorMeasurment = true;
 	SetStateLed(ColorDetector_PinState_High);
+	CLEAR_STACK();
 
 	return &m_color;
 }
 
 bool ColorDetector_IsColorReady()
 {
+	ADD_TO_CLEAR()
 	return m_isColorReady;
 }
 
 void ColorDetector_SetColorReadyFunc(void (*func)(ColorDetector_Color color))
 {
+	ADD_TO_CLEAR()
 	m_colorReadyFunc = func;
 }
 
 static void ColorReady(ColorDetector_Color color)
 {
+	ADD_TO_CLEAR()
 	if (m_colorReadyFunc == NULL)
 		return;
 	m_colorReadyFunc(color);
+	CLEAR_STACK();
 }

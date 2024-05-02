@@ -3,6 +3,7 @@
 #include <math.h>
 #include "TaskMenager.h"
 #include "Functions.h"
+#include "ClearStack.h"
 
 //PA9 -- CC1
 //PA8 -- CC2
@@ -17,16 +18,17 @@ float speedDriv;
 
 static void Loop()
 {
+	ADD_TO_CLEAR();
 	static float oldPosition = 0;
 
 	float position = EncoderDriv_GetPosition();
+	CLEAR_STACK();
 
 	float diffPosition = MinRadiusDiastance(oldPosition, position);
-//	float diffPosition = position - oldPosition;
-//	if(fabs(diffPosition) <= 3)
-		m_speed = diffPosition / (m_msPeriod * 0.001f);
-	if(m_speed < -0.1)
-		test++;
+	CLEAR_STACK();
+
+	m_speed = diffPosition / (m_msPeriod * 0.001f);
+
 	oldPosition = position;
 
 	posDriv = position;
@@ -35,6 +37,7 @@ static void Loop()
 
 void EncoderDriv_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 {
+	ADD_TO_CLEAR();
 	m_msPeriod = msPeriod;
 	m_maxEncoderValue = maxEncoderValue;
 
@@ -69,19 +72,23 @@ void EncoderDriv_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 }
 
 void EncoderDriv_SetMaxEncoderValue(uint32_t maxEncoderValue)
 {
+	ADD_TO_CLEAR();
 	m_maxEncoderValue = maxEncoderValue;
 }
 
 float EncoderDriv_GetSpeed()
 {
+	ADD_TO_CLEAR();
 	return m_speed;
 }
 
 float EncoderDriv_GetPosition()
 {
+	ADD_TO_CLEAR();
 	return TIM1->CNT * 2 * M_PI / m_maxEncoderValue;
 }

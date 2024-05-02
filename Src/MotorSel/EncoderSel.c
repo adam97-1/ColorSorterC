@@ -3,6 +3,7 @@
 #include <math.h>
 #include "TaskMenager.h"
 #include "Functions.h"
+#include "ClearStack.h"
 
 //PA5 -- CC1
 //PB3 -- CC2
@@ -16,10 +17,13 @@ float speedSel;
 
 static void Loop()
 {
+	ADD_TO_CLEAR();
 	static float oldPosition = 0;
 	float position = EncoderSel_GetPosition();
+	CLEAR_STACK();
 
 	float diffPosition = MinRadiusDiastance(oldPosition, position);
+	CLEAR_STACK();
 
 	m_speed = diffPosition / (m_msPeriod * 0.001f);
 
@@ -32,6 +36,7 @@ static void Loop()
 
 void EncoderSel_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 {
+	ADD_TO_CLEAR();
 	m_msPeriod = msPeriod;
 	m_maxEncoderValue = maxEncoderValue;
 
@@ -75,20 +80,24 @@ void EncoderSel_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 
 }
 
 void EncoderSel_SetMaxEncoderValue(uint32_t maxEncoderValue)
 {
+	ADD_TO_CLEAR();
 	m_maxEncoderValue = maxEncoderValue;
 }
 
 float EncoderSel_GetSpeed()
 {
+	ADD_TO_CLEAR();
 	return m_speed;
 }
 
 float EncoderSel_GetPosition()
 {
+	ADD_TO_CLEAR();
 	return TIM2->CNT * 2 * M_PI / m_maxEncoderValue;
 }

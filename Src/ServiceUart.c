@@ -6,6 +6,7 @@
 #include "MotorDriv/EncoderDriv.h"
 #include "MotorSel/EncoderSel.h"
 #include "Crc32.h"
+#include "ClearStack.h"
 
 typedef struct
 {
@@ -24,6 +25,7 @@ static SeviceUartData m_sendData =	{ 	.header = 0xAAAAAAAA, .msTime = 1, .positi
 
 static void SendDataUart(const void *begin, size_t size)
 {
+	ADD_TO_CLEAR();
 	for (size_t i = 0; i < size; i++) {
 		USART2->DR = *(const uint8_t*) (begin + i);
 		while (!(USART2->SR & USART_SR_TC))
@@ -34,18 +36,27 @@ static void SendDataUart(const void *begin, size_t size)
 
 static void Loop()
 {
+	ADD_TO_CLEAR();
 	m_sendData.msTime = SysTick_GetTime();
+	CLEAR_STACK();
 	m_sendData.positionMotorDriv = EncoderDriv_GetPosition();
+	CLEAR_STACK();
 	m_sendData.speedMotorDriv = EncoderDriv_GetSpeed();
+	CLEAR_STACK();
 	m_sendData.positionMotorSel = EncoderSel_GetPosition();
+	CLEAR_STACK();
 	m_sendData.speedMotorSel = EncoderSel_GetSpeed();
+	CLEAR_STACK();
 
 	m_sendData.crc = Crc32_CalcCrc((uint8_t*) (&m_sendData), (size_t) (sizeof(m_sendData) - sizeof(m_sendData.crc)), 0);
+	CLEAR_STACK();
 	SendDataUart(&m_sendData, (size_t) (sizeof(m_sendData)));
+	CLEAR_STACK();
 }
 
 void ServiceUart_Init(uint32_t msPeriod )
 {
+	ADD_TO_CLEAR();
 	m_msPeriod  = msPeriod;
 
 	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN);
@@ -73,4 +84,5 @@ void ServiceUart_Init(uint32_t msPeriod )
 
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 }

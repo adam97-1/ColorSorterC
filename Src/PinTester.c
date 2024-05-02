@@ -1,8 +1,10 @@
 #include  "PinTester.h"
 #include <stm32f446xx.h>
+#include "ClearStack.h"
 
 void PinTeste_Init()
 {
+	ADD_TO_CLEAR();
 	RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOCEN);
 
 	GPIOC->MODER &= ~(GPIO_MODER_MODE3_Msk );
@@ -20,10 +22,12 @@ void PinTeste_Init()
 
 void PinTeste_SetHigh()
 {
+	ADD_TO_CLEAR();
 	GPIOC->ODR |= GPIO_ODR_OD3;
 }
 
 void PinTeste_SetLow()
 {
+	ADD_TO_CLEAR();
 	GPIOC->ODR &= ~GPIO_ODR_OD3;
 }

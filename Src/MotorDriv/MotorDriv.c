@@ -3,6 +3,7 @@
 #include "TaskMenager.h"
 #include "MotorDriv/EncoderDriv.h"
 #include "MotorDriv/MotorDrivSpeedRegulator.h"
+#include "ClearStack.h"
 
 //IN2 -- PB8/TIM4_CH3
 //IN1 -- PB9/TIM4_CH4
@@ -31,7 +32,11 @@ static uint32_t m_msPeriod = 1;
 
 static void Loop()
 {
-	float out = MotorDrivSpeedRegulator_Calculate(m_speed, EncoderDriv_GetSpeed());
+	ADD_TO_CLEAR();
+	float speed =EncoderDriv_GetSpeed();
+	CLEAR_STACK();
+	float out = MotorDrivSpeedRegulator_Calculate(m_speed, speed);
+	CLEAR_STACK();
 
 	if (out > 0)
 	{
@@ -47,6 +52,7 @@ static void Loop()
 
 void MotorDriv_Init(uint32_t msPeriod )
 {
+	ADD_TO_CLEAR();
 	m_msPeriod  = msPeriod;
 
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
@@ -73,16 +79,23 @@ void MotorDriv_Init(uint32_t msPeriod )
 	TIM4->CR1 |= (TIM_CR1_CEN);
 
 	MotorDrivSpeedRegulator_Init(300, 10000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
+	CLEAR_STACK();
 	EncoderDriv_Init(m_msPeriod, 2500);
+	CLEAR_STACK();
 
 	Task task = { .Func = Loop, .Period = 1, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
+	CLEAR_STACK();
 }
 void MotorDriv_SetSpeed(float speed)
 {
+	ADD_TO_CLEAR();
 	m_speed = speed;
 }
 float MotorDriv_GetSpeed()
 {
-	return EncoderDriv_GetSpeed();
+	ADD_TO_CLEAR();
+	float speed = EncoderDriv_GetSpeed();
+	CLEAR_STACK();
+	return speed;
 }

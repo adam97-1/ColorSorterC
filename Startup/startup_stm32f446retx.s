@@ -55,6 +55,10 @@ defined in linker script */
   .weak Reset_Handler
   .type Reset_Handler, %function
 Reset_Handler:
+  ldr r1, =0x20000000  // start address of SRAM
+  ldr r2, =0x20008000  // end address of SRAM
+  movs r3, #2863311530   // we want to write AA to all address
+
   ldr   r0, =_estack
   mov   sp, r0          /* set stack pointer */
 /* Call the clock system initialization function.*/
@@ -66,6 +70,12 @@ Reset_Handler:
   ldr r2, =_sidata
   movs r3, #0
   b LoopCopyDataInit
+
+initializeSRAM:
+  str r3, [r1]   // store 0 at address
+  adds r1, r1, #4  // increment to next address
+  cmp r1, r2   // update flags
+  bne initializeSRAM // branch if write address equals end of SRAM
 
 CopyDataInit:
   ldr r4, [r2, r3]

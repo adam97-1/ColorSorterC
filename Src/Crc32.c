@@ -1,4 +1,5 @@
 #include "Crc32.h"
+#include "ClearStack.h"
 
 static const unsigned int crc32_table[] = { 0x00000000, 0x04c11db7, 0x09823b6e,
 		0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005, 0x2608edb8,
@@ -47,6 +48,7 @@ static const unsigned int crc32_table[] = { 0x00000000, 0x04c11db7, 0x09823b6e,
 
 uint32_t Crc32_CalcCrc(const uint8_t *begin, size_t size, uint32_t initValue)
 {
+	ADD_TO_CLEAR();
 	uint32_t crc = initValue;
 	while (size--)
 	{
