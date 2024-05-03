@@ -9,6 +9,7 @@
 #include "MotorDriv/MotorDriv.h"
 #include "MotorSel/MotorSel.h"
 #include "ClearStack.h"
+#include "Wrap.h"
 
 //#include "ServiceUart.h"
 
@@ -88,6 +89,9 @@ static inline void Init()
 
 int main(void)
 {
+	uint8_t* test = malloc(100);
+	memset(test, 0xFF, 100);
+	free(test);
 	ADD_TO_CLEAR();
 	Init();
 	CLEAR_STACK();

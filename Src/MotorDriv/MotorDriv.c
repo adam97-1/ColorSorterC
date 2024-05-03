@@ -8,21 +8,6 @@
 //IN2 -- PB8/TIM4_CH3
 //IN1 -- PB9/TIM4_CH4
 
-static float maxPwm = 2000;
-static float maxSpeed = 15.6f;
-
-static uint32_t period = 1;
-
-static float targetSpeed = 1.f;
-
-static float sumSpeed = 0.f;
-static float oldSpeed = 0.f;
-
-static float Kp_Speed = 300.f;
-static float Ki_Speed = 10.f;
-static float Kd_Speed = 0.f;
-static float saturationSpeed = 100000.0f;
-
 static float m_maxPwm = 2000;
 static float m_maxSpeed = 15.6;
 

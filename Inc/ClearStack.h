@@ -9,7 +9,9 @@ extern uint16_t m_intexStack;
 #define CLEAR_STACK() {\
 	if(m_intexStack != 0)\
 	{ \
-		size_t stos_rozmiar = (void*)m_endStacks[m_intexStack - 1] - (void*)m_endStacks[m_intexStack]; \
+		int stos_rozmiar = (void*)m_endStacks[m_intexStack - 1] - (void*)m_endStacks[m_intexStack]; \
+		if(stos_rozmiar < 0 ) \
+			stos_rozmiar *= -1; \
 		memset(m_endStacks[m_intexStack], 0xAA, stos_rozmiar); \
 		m_endStacks[m_intexStack] = 0; \
 		m_intexStack--; \
