@@ -29,7 +29,7 @@ void TaskMenager_Run()
 	{
 		if (m_taskList[i].Func == NULL)
 			continue;
-		if ((msTime % m_taskList[i].Period) == 0)
+		if ((msTime % m_taskList[i].Period) == 0 || true)
 			m_taskList[i].Func();
 	}
 

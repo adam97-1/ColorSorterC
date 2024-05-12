@@ -191,7 +191,6 @@ static void Loop()
 		m_color.Green = frequency;
 		SetColorFilter(ColorDetector_ColorFilter_None);
 		SetStateLed(ColorDetector_PinState_Low);
-		SetPrescaler(ColorDetector_Prescaler_0);
 		m_isColorReady = true;
 		m_isColorMeasurment = false;
 		ColorReady(m_color);
@@ -210,7 +209,7 @@ void ColorDetector_Init(uint32_t msPeriod )
 	GpioInit();
 	TimerInit();
 	SetColorFilter(ColorDetector_ColorFilter_None);
-	SetPrescaler(ColorDetector_Prescaler_0);
+	SetPrescaler(ColorDetector_Prescaler_100);
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);
 }
@@ -268,8 +267,6 @@ const ColorDetector_Color* ColorDetector_GetColor()
 	m_isColorReady = false;
 	m_isColorMeasurment = true;
 	SetStateLed(ColorDetector_PinState_High);
-	SetPrescaler(ColorDetector_Prescaler_100);
-
 	return &m_color;
 }
 
