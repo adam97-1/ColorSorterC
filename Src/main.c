@@ -8,8 +8,8 @@
 #include "ColorDetector.h"
 #include "MotorDriv/MotorDriv.h"
 #include "MotorSel/MotorSel.h"
-
-//#include "ServiceUart.h"
+#include "DebugMonitor.h"
+#include "ServiceUart.h"
 
 #define MAX_COLOR_LINE 255
 
@@ -59,7 +59,7 @@ static inline void Init()
 	ColorDetector_Init(100);
 	MotorDriv_Init(1);
 	MotorSel_Init(1);
-	//ServiceUart_Init();
+	ServiceUart_Init();
 
 	MotorDriv_SetSpeed(0.5);
 
@@ -74,7 +74,17 @@ int main(void)
 {
 	Init();
 
+	  volatile uint32_t *demcr = (uint32_t*)0xE000EDFC;
+	  const uint32_t mon_en_bit = 16;
+	  *demcr |= 7 << mon_en_bit;
+
+	  volatile uint32_t *shpr3 = (uint32_t *)0xE000ED20;
+	  *shpr3 = 0x00;
+
 	while (true)
+	{
+//		sendData.indexMain++;
 		TaskMenager_Run();
+	}
 
 }

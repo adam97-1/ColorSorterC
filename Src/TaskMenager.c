@@ -1,7 +1,6 @@
 #include "TaskMenager.h"
 #include <stddef.h>
 #include "SysTick.h"
-#include "PinTester.h"
 
 #define MAX_TASK 255
 
@@ -11,7 +10,7 @@ Task m_taskList[MAX_TASK] = { NULL };
 
 void TaskMenager_Init()
 {
-	PinTeste_Init();
+
 }
 
 void TaskMenager_Run()
@@ -23,17 +22,14 @@ void TaskMenager_Run()
 		return;
 	oldMsTime = msTime;
 
-	PinTeste_SetHigh();
-
 	for (size_t i = 0; i < m_taskCount; i++)
 	{
 		if (m_taskList[i].Func == NULL)
 			continue;
-		if ((msTime % m_taskList[i].Period) == 0)
+		if ((msTime % m_taskList[i].Period) == 0 || true)
 			m_taskList[i].Func();
 	}
 
-	PinTeste_SetLow();
 }
 
 bool TaskMenager_AddTask(Task task)
