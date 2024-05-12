@@ -1,6 +1,7 @@
 #include "MotorSel/MotorSelPositionRegulator.h"
 
 #include "math.h"
+#include "Functions.h"
 
 static float m_Kp = 1;
 static float m_Ki = 0;
@@ -69,7 +70,7 @@ static inline float Saturation(float value, float maxValue)
 float MotorSelPositionRegulator_Calculate(float targetValue, float actualValue)
 {
 	targetValue = Saturation(targetValue, m_maxInValue);
-	float errorValue = targetValue - actualValue;
+	float errorValue =MinRadiusDiastance(actualValue, targetValue);
 
 	m_errorIntegral += errorValue * (m_diffMsTime * 0.001f);
 	m_errorIntegral = Saturation(m_errorIntegral, m_maxIntegral);
