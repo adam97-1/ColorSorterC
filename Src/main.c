@@ -28,26 +28,25 @@ static void SetPositionOfColor()
 {
 	ColorDetector_Color color = m_colorLine[m_beginColorLine];
 	if(color.Blue < color.Green && color.Blue < color.Red)
-		MotorSel_SetPosition(1);
+		MotorSel_SetPosition(1.05);
 	else if(color.Blue > color.Green && color.Blue > color.Red)
-		MotorSel_SetPosition(2);
+		MotorSel_SetPosition(1.05*2);
 	else if(color.Green > color.Blue && color.Green > color.Red)
-		MotorSel_SetPosition(3);
+		MotorSel_SetPosition(1.05*3);
 	else if(color.Red > color.Blue && color.Red > color.Green)
-		MotorSel_SetPosition(4);
+		MotorSel_SetPosition(1.05*4);
 
 }
 static void SlotColorReady(ColorDetector_Color color)
 {
 	m_colorLine[m_backColorLine] = color;
-	SetPositionOfColor();
 	m_backColorLine++;
 }
 
 static void SlotIrDetectorSelRisingEdgeState()
 {
-	m_beginColorLine++;
 	SetPositionOfColor();
+	m_beginColorLine++;
 }
 
 static inline void Init()
@@ -55,14 +54,14 @@ static inline void Init()
 	Clock_Init();
 	SysTick_Init();
 	TaskMenager_Init();
-	IrDetectorSel_Init(1);
-	IrDetectorCol_Init(1);
+	IrDetectorSel_Init(10);
+	IrDetectorCol_Init(10);
 	ColorDetector_Init(100);
 	MotorDriv_Init(1);
 	MotorSel_Init(1);
 	//ServiceUart_Init();
 
-	MotorDriv_SetSpeed(1);
+	MotorDriv_SetSpeed(0.5);
 
 	IrDetectorCol_SetRisingEdgeStateFunc(SlotIrDetectorColRisingEdgeState);
 	IrDetectorSel_SetRisingEdgeStateFunc(SlotIrDetectorSelRisingEdgeState);
@@ -70,13 +69,12 @@ static inline void Init()
 
 }
 
+
 int main(void)
 {
 	Init();
 
 	while (true)
-	{
 		TaskMenager_Run();
-	}
 
 }

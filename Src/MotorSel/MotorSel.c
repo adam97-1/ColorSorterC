@@ -76,10 +76,10 @@ void MotorSel_Init(uint32_t msPeriod )
 	TIM4->CR1 |= (TIM_CR1_CEN);
 	TIM14->CR1 |= (TIM_CR1_CEN);
 
-	MotorSelSpeedRegulator_Init(300, 10000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
-	MotorSelPositionRegulator_Init(20, 20, 0, 1000000, m_maxSpeed, m_maxPwm,	m_msPeriod);
+	MotorSelSpeedRegulator_Init(300, 1000, 0, 1000000, m_maxSpeed, m_maxPwm, m_msPeriod);
+	MotorSelPositionRegulator_Init(20, 20, 0, 1000000, 2*M_PI, m_maxSpeed,	m_msPeriod);
 
-	EncoderSel_Init(m_msPeriod, 2500);
+	EncoderSel_Init(m_msPeriod, 2472);
 
 	Task task = { .Func = Loop, .Period = m_msPeriod, .Prioryty = 1 };
 	TaskMenager_AddTask(task);

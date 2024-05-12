@@ -8,26 +8,21 @@
 //PB3 -- CC2
 
 static float m_speed = 0;
+float m_position = 0;
 static uint32_t m_msPeriod = 1;
-static uint32_t m_maxEncoderValue = 2500;
+static uint32_t m_maxEncoderValue = 2472;
 
-float posSel;
-float speedSel;
 
 static void Loop()
 {
 	static float oldPosition = 0;
-	float position = EncoderSel_GetPosition();
+	m_position = TIM2->CNT * 2 * M_PI / m_maxEncoderValue;
 
-	float diffPosition = MinRadiusDiastance(oldPosition, position);
+	float diffPosition = MinRadiusDiastance(oldPosition, m_position);
 
-	m_speed = diffPosition / (m_msPeriod * 0.001f);
+	m_speed = (m_speed*100 + diffPosition / (m_msPeriod * 0.001f))/101;
 
-	oldPosition = position;
-
-	 posSel = position;
-	 speedSel = m_speed;
-
+	oldPosition = m_position;
 }
 
 void EncoderSel_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
@@ -61,7 +56,7 @@ void EncoderSel_Init(uint32_t msPeriod, uint32_t maxEncoderValue)
 	TIM2->CCMR1 &= ~(TIM_CCMR1_CC1S_Msk | TIM_CCMR1_CC2S_Msk |
 					TIM_CCMR1_IC1F_Msk 	| TIM_CCMR1_IC2F_Msk);
 	TIM2->CCMR1 |= (1 << TIM_CCMR1_CC1S_Pos | 1 << TIM_CCMR1_CC2S_Pos |
-					200 << TIM_CCMR1_IC1F_Pos | 200 << TIM_CCMR1_IC2F_Pos);
+					0 << TIM_CCMR1_IC1F_Pos | 0 << TIM_CCMR1_IC2F_Pos);
 
 	TIM2->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC2P |
 					TIM_CCER_CC1NP| TIM_CCER_CC2NP);
@@ -90,5 +85,5 @@ float EncoderSel_GetSpeed()
 
 float EncoderSel_GetPosition()
 {
-	return TIM2->CNT * 2 * M_PI / m_maxEncoderValue;
+	return m_position;
 }
