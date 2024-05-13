@@ -25,11 +25,14 @@ static void Loop()
 {
 	static bool oldState = false;
 	bool state = IrDetectorSel_GetState();
-	if (state != oldState) {
-		if (state == true)
+	if (state != oldState || true) {
+		if (state == true || true)
+		{
 			RisingEdgeState();
-		else
 			FallingEdgeState();
+		}
+//		else
+//			FallingEdgeState();
 		oldState = state;
 	} else
 		;

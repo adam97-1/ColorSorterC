@@ -25,8 +25,8 @@ static void Loop()
 {
 	static bool oldState = false;
 	bool state = IrDetectorCol_GetState();
-	if (state != oldState) {
-		if (state == true)
+	if (state != oldState || true) {
+		if (state == true || true)
 			RisingEdgeState();
 		else
 			FallingEdgeState();
