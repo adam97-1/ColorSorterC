@@ -167,7 +167,7 @@ static void Loop()
 {
 	static uint8_t subColorMeasurement = 0;
 
-	if (m_isColorMeasurment == false)
+	if (m_isColorMeasurment == false && false)
 		return;
 
 	uint32_t frequency = TIM3->CNT * 2;

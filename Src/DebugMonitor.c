@@ -9,16 +9,16 @@ void DebugMon_Handler(void)
 	uint8_t *sp;
 	__asm__("mov %0, sp" : "=r"(sp));
 
-	if((uint8_t*)sendData.stackPointer < sp)
+	if((uint8_t*)sendData.stackPointer > sp)
+	{
+		sendData.indexStack++;
+	}
+	else if((uint8_t*)sendData.stackPointer < sp)
 	{
 		for(uint8_t* start = (uint8_t*)sendData.stackPointer; start < sp; start++)
 		{
 			*start = 0xAA;
 		}
-		sendData.indexStack++;
-	}
-	else if((uint8_t*)sendData.stackPointer > sp)
-	{
 		sendData.indexStack--;
 	}
 	else
@@ -30,12 +30,11 @@ void DebugMon_Handler(void)
 	sendData.usedMem = 0;
 	for(uint8_t* start = (uint8_t*)0x20000000; start < sp; start++)
 	{
-		if(*start == 0xAA)
+		if(*start != 0xAA)
 			sendData.usedMem++;
 	}
 
-	sendData.crc = CRC32_CALC_CRC((uint8_t*) (&sendData), (size_t) (sizeof(sendData) - sizeof(sendData.crc)), 0);
-	SEND_DATA_UART(&sendData, 6*4);
+	sendData.crc = CRC32_CALC_CRC((uint8_t*) (&sendData), 20, 0);
+	SEND_DATA_UART(&sendData,24);
 
-//	while(sendData.indexStack > 10);
 }

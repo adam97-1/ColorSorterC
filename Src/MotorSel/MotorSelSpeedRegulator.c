@@ -84,7 +84,7 @@ float MotorSelSpeedRegulator_Calculate(float targetValue, float actualValue)
 			+ m_Kd * errorDiffValue);
 	out = Saturation(out, m_maxOutValue);
 
-	if (fabs(out) >= m_maxOutValue)
+	if (out >= m_maxOutValue || out <= -m_maxOutValue)
 		m_errorIntegral -= errorValue * (m_diffMsTime * 0.001f);
 
 	return out;

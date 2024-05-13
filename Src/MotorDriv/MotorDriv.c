@@ -7,7 +7,6 @@
 //IN2 -- PB8/TIM4_CH3
 //IN1 -- PB9/TIM4_CH4
 
-
 static float m_maxPwm = 2000;
 static float m_maxSpeed = 15.6;
 

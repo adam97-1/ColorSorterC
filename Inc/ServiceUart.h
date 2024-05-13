@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 #include "stm32f446xx.h"
+#include <stddef.h>
 
 #pragma pack(push, n)
 typedef struct
 {
 	uint32_t header;
 	uint32_t indexMain;
-	uint32_t indexStack;
+	int32_t indexStack;
 	uint32_t stackPointer;
 	uint32_t usedMem;
 	uint32_t crc;

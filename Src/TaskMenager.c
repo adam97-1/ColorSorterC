@@ -18,8 +18,8 @@ void TaskMenager_Run()
 	static uint32_t oldMsTime = 0;
 	uint32_t msTime = SysTick_GetTime();
 
-	if (oldMsTime == msTime)
-		return;
+//	if (oldMsTime == msTime)
+//		return;
 	oldMsTime = msTime;
 
 	for (size_t i = 0; i < m_taskCount; i++)

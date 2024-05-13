@@ -10,6 +10,8 @@
 #include "MotorSel/MotorSel.h"
 #include "DebugMonitor.h"
 #include "ServiceUart.h"
+#include <string.h>
+
 
 #define MAX_COLOR_LINE 255
 
@@ -54,12 +56,12 @@ static inline void Init()
 	Clock_Init();
 	SysTick_Init();
 	TaskMenager_Init();
+	ServiceUart_Init();
 	IrDetectorSel_Init(10);
 	IrDetectorCol_Init(10);
 	ColorDetector_Init(100);
 	MotorDriv_Init(1);
 	MotorSel_Init(1);
-	ServiceUart_Init();
 
 	MotorDriv_SetSpeed(0.5);
 
@@ -88,3 +90,4 @@ int main(void)
 	}
 
 }
+
