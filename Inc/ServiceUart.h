@@ -19,10 +19,9 @@ typedef struct
     const volatile uint8_t *ptr = (const volatile uint8_t *)(begin); \
     size_t sz = (size); \
     for (size_t i = 0; i < sz; i++) { \
+    	while (!(USART2->SR & USART_SR_TXE)); \
         USART2->DR = *(ptr); \
         ptr++; \
-        while (!(USART2->SR & USART_SR_TC)) \
-            ; \
     } \
 }
 

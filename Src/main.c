@@ -83,7 +83,7 @@ int main(void)
 
 	while (true)
 	{
-//		sendData.indexMain++;
+		sendData.indexMain++;
 		TaskMenager_Run();
 	}
 
